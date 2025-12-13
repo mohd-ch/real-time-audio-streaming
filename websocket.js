@@ -24,4 +24,3 @@ export function sendAudioChunk(chunk) {
         socket.send(chunk);
     }
 }
-
