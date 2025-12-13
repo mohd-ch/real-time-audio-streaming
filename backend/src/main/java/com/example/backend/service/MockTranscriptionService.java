@@ -13,10 +13,10 @@ public class MockTranscriptionService implements TranscriptionService {
 
         // Simulate streaming partial transcription
         return Flux.just(
-                "Listening...",
-                "Processing audio...",
-                "Converting speech to text...",
-                "Detected speech chunk (" + audioChunk.length + " bytes)"
-        ).delayElements(Duration.ofMillis(300));
+               "Hello...",
+        "Hello this is a",
+        "Hello this is a real-time",
+        "Hello this is a real-time transcription demo"
+    ).delayElements(Duration.ofMillis(350));
     }
 }
