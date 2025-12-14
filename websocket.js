@@ -34,5 +34,8 @@ export function sendAudioChunk(chunk) {
 }
 
 export function closeWebSocket() {
-  if (socket) socket.close();
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.close();
+  }
 }
+
