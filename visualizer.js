@@ -1,45 +1,42 @@
-const canvas = document.getElementById("visualizer");
-const ctx = canvas.getContext("2d");
+export function startVisualizer(analyser, canvas) {
+  const ctx = canvas.getContext("2d");
+  analyser.fftSize = 256;
+  analyser.smoothingTimeConstant = 0.85;
 
-canvas.width = 400;
-canvas.height = 400;
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
 
-function startVisualizer(analyser, dataArray, isRunningFn) {
-    function draw() {
-        if (!isRunningFn()) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            return;
-        }
+  function draw() {
+    requestAnimationFrame(draw);
 
-        requestAnimationFrame(draw);
-        analyser.getByteFrequencyData(dataArray);
+    analyser.getByteFrequencyData(dataArray);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const radius = 70;
+    const bars = 64;
 
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        const radius = 100;
-        const bars = dataArray.length;
+    for (let i = 0; i < bars; i++) {
+      const angle = (i / bars) * Math.PI * 2;
+      const value = dataArray[i];
+      const length = value / 2;
 
-        for (let i = 0; i < bars; i++) {
-            const angle = (i / bars) * Math.PI * 2;
-            const barHeight = dataArray[i] / 2;
+      const x1 = cx + Math.cos(angle) * radius;
+      const y1 = cy + Math.sin(angle) * radius;
+      const x2 = cx + Math.cos(angle) * (radius + length);
+      const y2 = cy + Math.sin(angle) * (radius + length);
 
-            const x1 = centerX + Math.cos(angle) * radius;
-            const y1 = centerY + Math.sin(angle) * radius;
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.9)";
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
 
-            const x2 = centerX + Math.cos(angle) * (radius + barHeight);
-            const y2 = centerY + Math.sin(angle) * (radius + barHeight);
-
-            ctx.strokeStyle = `hsl(${i * 3}, 100%, 50%)`;
-            ctx.lineWidth = 2;
-
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-        }
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
     }
+  }
 
-    draw();
+  draw();
 }

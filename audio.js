@@ -1,59 +1,46 @@
-import { connectWebSocket, sendAudioChunk } from "./websocket.js";
-
-let audioContext;
-let analyser;
-let dataArray;
-let mediaStream;
-let processor;
-let isRunning = false;
+import { connectWebSocket, sendAudioChunk, closeWebSocket } from "./websocket.js";
+import { startVisualizer } from "./visualizer.js";
 
 const startBtn = document.getElementById("startBtn");
 const stopBtn = document.getElementById("stopBtn");
+const canvas = document.getElementById("visualizer");
 
-startBtn.addEventListener("click", async () => {
-    if (isRunning) return;
+let audioContext, analyser, processor, stream;
 
-    connectWebSocket();
+startBtn.onclick = async () => {
+  startBtn.disabled = true;
+  stopBtn.disabled = false;
 
-    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  connectWebSocket();
 
-    audioContext = new AudioContext({ sampleRate: 16000 });
-    const source = audioContext.createMediaStreamSource(mediaStream);
+  stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  audioContext = new AudioContext();
 
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
+  analyser = audioContext.createAnalyser();
+  const source = audioContext.createMediaStreamSource(stream);
 
-    dataArray = new Uint8Array(analyser.frequencyBinCount);
+  source.connect(analyser);
+  analyser.connect(audioContext.destination);
 
-    processor = audioContext.createScriptProcessor(4096, 1, 1);
+  startVisualizer(analyser, canvas);
 
-    source.connect(analyser);
-    analyser.connect(processor);
-    processor.connect(audioContext.destination);
+  processor = audioContext.createScriptProcessor(16384, 1, 1);
+  source.connect(processor);
+  processor.connect(audioContext.destination);
 
-    processor.onaudioprocess = (e) => {
-        if (!isRunning) return;
+  processor.onaudioprocess = (e) => {
+    const input = e.inputBuffer.getChannelData(0);
+    sendAudioChunk(new Float32Array(input).buffer);
+  };
+};
 
-        const input = e.inputBuffer.getChannelData(0);
-        const buffer = new Float32Array(input);
-        sendAudioChunk(buffer.buffer); // send binary audio
-    };
+stopBtn.onclick = () => {
+  startBtn.disabled = false;
+  stopBtn.disabled = true;
 
-    isRunning = true;
-    startBtn.disabled = true;
-    stopBtn.disabled = false;
-
-    startVisualizer(analyser, dataArray, () => isRunning);
-});
-
-stopBtn.addEventListener("click", () => {
-    if (!isRunning) return;
-
-    mediaStream.getTracks().forEach(track => track.stop());
-    processor.disconnect();
-    audioContext.close();
-
-    isRunning = false;
-    startBtn.disabled = false;
-    stopBtn.disabled = true;
-});
+  processor?.disconnect();
+  analyser?.disconnect();
+  audioContext?.close();
+  stream?.getTracks().forEach(t => t.stop());
+  closeWebSocket();
+};

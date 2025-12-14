@@ -1,27 +1,38 @@
 let socket;
 
 export function connectWebSocket() {
-    socket = new WebSocket(
-        "wss://real-time-audio-streaming.onrender.com/audio-stream"
-    );
+  socket = new WebSocket(
+    "wss://real-time-audio-streaming.onrender.com/audio-stream"
+  );
 
-    socket.onopen = () => {
-        console.log("WebSocket connected");
-    };
+  socket.onopen = () => {
+    console.log("WebSocket connected");
+  };
 
-    socket.onmessage = (event) => {
-        const output = document.getElementById("transcript");
-        output.innerHTML += `<div>${event.data}</div>`;
-    };
+  socket.onmessage = (event) => {
+    const transcript = document.getElementById("transcript");
 
-    socket.onerror = (err) => {
-        console.error("WebSocket error", err);
-    };
+    const placeholder = transcript.querySelector(".placeholder");
+    if (placeholder) placeholder.remove();
+
+    const line = document.createElement("div");
+    line.textContent = event.data;
+
+    transcript.appendChild(line);
+    transcript.scrollTop = transcript.scrollHeight;
+  };
+
+  socket.onerror = (err) => {
+    console.error("WebSocket error", err);
+  };
 }
 
 export function sendAudioChunk(chunk) {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(chunk);
-    }
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(chunk);
+  }
 }
 
+export function closeWebSocket() {
+  if (socket) socket.close();
+}

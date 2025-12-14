@@ -1,26 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Circular Audio Visualizer</title>
-    <link rel="stylesheet" href="styles.css" />
-</head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real-Time Audio Streaming</title>
+  <link rel="stylesheet" href="./styles.css?v=3" />
+
 <body>
+  <main class="app">
+    <header class="header">
+      <h1>Real-Time Audio Streaming</h1>
+      <p>WebSocket · Web Audio · Spring Boot</p>
+    </header>
 
-    <div class="container">
-        <h2>Circular Audio Equalizer</h2>
+    <section class="visualizer-section">
+      <span class="visualizer-hint">Listening visualizer</span>
+      <canvas id="visualizer" width="220" height="220"></canvas>
+    </section>
 
-        <canvas id="visualizer"></canvas>
-        <div id="transcript" style="margin-top:20px; font-size:14px;"></div>
+    <section class="controls">
+      <button id="startBtn">Start Listening</button>
+      <button id="stopBtn" disabled>Stop</button>
+    </section>
 
+    <section class="transcript-section">
+      <h3>Live Transcription</h3>
+      <div id="transcript">
+        <div class="placeholder">
+          Start speaking to see live transcription…
+        </div>
+      </div>
+    </section>
+  </main>
 
-    </div>
-
-    <div class="controls">
-    <button id="startBtn">Start Microphone</button>
-    <button id="stopBtn" disabled>Stop Microphone</button>
-</div>
-   <script type="module" src="audio.js"></script>
-    <script src="visualizer.js"></script>
+  <script type="module" src="./audio.js"></script>
 </body>
 </html>
